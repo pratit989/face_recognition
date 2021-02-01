@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Author: fyr91
-# @Date:   2019-10-22 15:05:15
-# @Last Modified by:   User
-# @Last Modified time: 2019-10-30 22:04:25
 import os
 import cv2
 import dlib

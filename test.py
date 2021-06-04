@@ -1,12 +1,12 @@
-import os
+import pickle
+
 import cv2
 import dlib
 import numpy as np
-from imutils import face_utils
-import tensorflow as tf
-import pickle
 import onnx
 import onnxruntime as ort
+import tensorflow as tf
+from imutils import face_utils
 from onnx_tf.backend import prepare
 
 

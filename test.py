@@ -9,6 +9,7 @@ import onnx
 import onnxruntime as ort
 from onnx_tf.backend import prepare
 
+
 def area_of(left_top, right_bottom):
     """
     Compute the areas of rectangles given two corners.
@@ -20,6 +21,7 @@ def area_of(left_top, right_bottom):
     """
     hw = np.clip(right_bottom - left_top, 0.0, None)
     return hw[..., 0] * hw[..., 1]
+
 
 def iou_of(boxes0, boxes1, eps=1e-5):
     """
@@ -38,6 +40,7 @@ def iou_of(boxes0, boxes1, eps=1e-5):
     area0 = area_of(boxes0[..., :2], boxes0[..., 2:])
     area1 = area_of(boxes1[..., :2], boxes1[..., 2:])
     return overlap_area / (area0 + area1 - overlap_area + eps)
+
 
 def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
     """
@@ -72,6 +75,7 @@ def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
 
     return box_scores[picked, :]
 
+
 def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.5, top_k=-1):
     """
     Select boxes that contain human faces
@@ -100,9 +104,9 @@ def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.5
         subset_boxes = boxes[mask, :]
         box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
         box_probs = hard_nms(box_probs,
-           iou_threshold=iou_threshold,
-           top_k=top_k,
-           )
+                             iou_threshold=iou_threshold,
+                             top_k=top_k,
+                             )
         picked_box_probs.append(box_probs)
         picked_labels.extend([class_index] * box_probs.shape[0])
     if not picked_box_probs:
@@ -113,6 +117,7 @@ def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.5
     picked_box_probs[:, 2] *= width
     picked_box_probs[:, 3] *= height
     return picked_box_probs[:, :4].astype(np.int32), np.array(picked_labels), picked_box_probs[:, 4]
+
 
 onnx_path = 'models/ultra_light/ultra_light_models/ultra_light_640.onnx'
 onnx_model = onnx.load(onnx_path)
@@ -162,14 +167,14 @@ with tf.Graph().as_default():
 
             # locate faces
             faces = []
-            boxes[boxes<0] = 0
+            boxes[boxes < 0] = 0
             for i in range(boxes.shape[0]):
                 box = boxes[i, :]
                 x1, y1, x2, y2 = box
 
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                aligned_face = fa.align(frame, gray, dlib.rectangle(left = x1, top=y1, right=x2, bottom=y2))
-                aligned_face = cv2.resize(aligned_face, (112,112))
+                aligned_face = fa.align(frame, gray, dlib.rectangle(left=x1, top=y1, right=x2, bottom=y2))
+                aligned_face = cv2.resize(aligned_face, (112, 112))
 
                 aligned_face = aligned_face - 127.5
                 aligned_face = aligned_face * 0.0078125
@@ -177,11 +182,11 @@ with tf.Graph().as_default():
                 faces.append(aligned_face)
 
             # face embedding
-            if len(faces)>0:
+            if len(faces) > 0:
                 predictions = []
 
                 faces = np.array(faces)
-                feed_dict = { images_placeholder: faces, phase_train_placeholder:False }
+                feed_dict = {images_placeholder: faces, phase_train_placeholder: False}
                 embeds = sess.run(embeddings, feed_dict=feed_dict)
 
                 # prediciton using distance
@@ -201,9 +206,9 @@ with tf.Graph().as_default():
                     text = f"{predictions[i]}"
 
                     x1, y1, x2, y2 = box
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (80,18,236), 2)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (80, 18, 236), 2)
                     # Draw a label with a name below the face
-                    cv2.rectangle(frame, (x1, y2 - 20), (x2, y2), (80,18,236), cv2.FILLED)
+                    cv2.rectangle(frame, (x1, y2 - 20), (x2, y2), (80, 18, 236), cv2.FILLED)
                     font = cv2.FONT_HERSHEY_DUPLEX
                     cv2.putText(frame, text, (x1 + 6, y2 - 6), font, 0.3, (255, 255, 255), 1)
 

@@ -130,6 +130,8 @@ fa = face_utils.facealigner.FaceAligner(shape_predictor, desiredFaceWidth=112, d
 
 threshold = 0.63
 
+stranger = 0
+
 # load distance
 with open("embeddings/embeddings.pkl", "rb") as f:
     (saved_embeds, names) = pickle.load(f)
@@ -198,6 +200,7 @@ with tf.Graph().as_default():
                         predictions.append(names[idx])
                     else:
                         predictions.append("unknown")
+                        stranger += 1
 
                 # draw
                 for i in range(boxes.shape[0]):
@@ -213,6 +216,11 @@ with tf.Graph().as_default():
                     cv2.putText(frame, text, (x1 + 6, y2 - 6), font, 0.3, (255, 255, 255), 1)
 
             cv2.imshow('Video', frame)
+
+            if stranger > 10:
+                import ctypes
+                ctypes.windll.user32.LockWorkStation()
+                break
 
             # Hit 'q' on the keyboard to quit!
             if cv2.waitKey(1) & 0xFF == ord('q'):
